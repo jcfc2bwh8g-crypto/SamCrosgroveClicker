@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sam Cosgrove Clicker</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: rgba(15, 23, 42, 0.86);
+      --accent: #22c55e;
+      --accent-2: #38bdf8;
+      --danger: #f97316;
+      --text: #f8fafc;
+      --muted: #cbd5e1;
+      --shadow: 0 20px 50px rgba(15, 23, 42, 0.35);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(34, 197, 94, 0.2), transparent 20%),
+        radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.18), transparent 22%),
+        linear-gradient(160deg, #020617, #111827 55%, #0f172a);
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .game-shell {
+      width: min(980px, 100%);
+      display: grid;
+      gap: 20px;
+      grid-template-columns: 1.2fr 0.8fr;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .eyebrow {
+      color: var(--accent-2);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 2vw + 1rem, 2.4rem);
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 620px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat-box {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+    }
+
+    .stat-label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.84rem;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-weight: 800;
+      font-size: 1.4rem;
+    }
+
+    .click-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 18px 24px;
+    }
+
+    .clicker-button {
+      border: 0;
+      background: transparent;
+      padding: 0;
+      cursor: pointer;
+      border-radius: 999px;
+      transition: transform 120ms ease, filter 120ms ease;
+    }
+
+    .clicker-button:hover {
+      transform: scale(1.02);
+      filter: brightness(1.05);
+    }
+
+    .clicker-button:active {
+      transform: scale(0.98);
+    }
+
+    .clicker-image {
+      display: block;
+      width: min(320px, 80vw);
+      height: auto;
+      border-radius: 999px;
+      box-shadow: 0 24px 60px rgba(14, 165, 233, 0.22);
+      border: 4px solid rgba(255, 255, 255, 0.16);
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    .clicker-tip {
+      color: var(--muted);
+      font-size: 0.95rem;
+      text-align: center;
+      margin: 0;
+    }
+
+    .side-panel {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .side-title {
+      margin: 0;
+      font-size: 1.15rem;
+    }
+
+    .upgrade-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .upgrade-card {
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      background: rgba(15, 23, 42, 0.74);
+      padding: 14px;
+    }
+
+    .upgrade-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .upgrade-name {
+      font-weight: 700;
+    }
+
+    .upgrade-cost {
+      color: var(--accent-2);
+      font-weight: 800;
+    }
+
+    .upgrade-description {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin: 0 0 12px;
+      line-height: 1.5;
+    }
+
+    .buy-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 800;
+      color: #082f49;
+      background: linear-gradient(90deg, #86efac, #67e8f9);
+      cursor: pointer;
+      transition: transform 120ms ease, opacity 120ms ease;
+    }
+
+    .buy-btn:hover { transform: translateY(-1px); }
+
+    .buy-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .log {
+      min-height: 72px;
+      border-radius: 18px;
+      padding: 14px;
+      background: rgba(15, 23, 42, 0.74);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      color: var(--muted);
+    }
+
+    .log-line {
+      margin-bottom: 8px;
+    }
+
+    .small-note {
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 900px) {
+      .game-shell { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="game-shell">
+    <section class="panel hero">
+      <div class="eyebrow">EA FC clicker challenge</div>
+      <h1>Sam Cosgrove Goal Rush</h1>
+      <p class="subtitle">
+        Click the Sam Cosgrove portrait to score goals, buy upgrades, and build an unstoppable clicker streak.
+      </p>
+
+      <div class="stats">
+        <div class="stat-box">
+          <span class="stat-label">Goals</span>
+          <span id="score" class="stat-value">0</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Per-Click Power</span>
+          <span id="clickPower" class="stat-value">1</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Auto-Goals / sec</span>
+          <span id="aps" class="stat-value">0</span>
+        </div>
+      </div>
+
+      <div class="click-area panel">
+        <button id="clickerButton" class="clicker-button" aria-label="Click Sam Cosgrove to score">
+          <img
+            class="clicker-image"
+            src="https://aucklandfc.co.nz/wp-content/uploads/sites/19/2025/08/Sam_Cosgrove.png"
+            alt="Sam Cosgrove"
+          />
+        </button>
+        <p class="clicker-tip">Tap the portrait to score a goal. Every click earns <strong>1</strong> goal.</p>
+      </div>
+    </section>
+
+    <aside class="panel side-panel">
+      <div>
+        <h2 class="side-title">Upgrades</h2>
+        <p class="small-note">Spend goals to increase your scoring rate and automate the grind.</p>
+      </div>
+
+      <div class="upgrade-list">
+        <div class="upgrade-card">
+          <div class="upgrade-row">
+            <span class="upgrade-name">Goal Coach</span>
+            <span id="coachCost" class="upgrade-cost">25</span>
+          </div>
+          <p class="upgrade-description">Increases each click from 1 to 2 goals.</p>
+          <button id="coachBtn" class="buy-btn">Upgrade</button>
+        </div>
+
+        <div class="upgrade-card">
+          <div class="upgrade-row">
+            <span class="upgrade-name">Training Ground</span>
+            <span id="autoCost" class="upgrade-cost">50</span>
+          </div>
+          <p class="upgrade-description">Adds 1 auto-goal every second.</p>
+          <button id="autoBtn" class="buy-btn">Upgrade</button>
+        </div>
+
+        <div class="upgrade-card">
+          <div class="upgrade-row">
+            <span class="upgrade-name">Momentum Boost</span>
+            <span id="multCost" class="upgrade-cost">100</span>
+          </div>
+          <p class="upgrade-description">Doubles your click power for the rest of the match.</p>
+          <button id="multBtn" class="buy-btn">Upgrade</button>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="side-title">Match log</h2>
+        <div id="log" class="log">
+          <div class="log-line">Match started — get your first goal!</div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const scoreEl = document.getElementById('score');
+    const clickPowerEl = document.getElementById('clickPower');
+    const apsEl = document.getElementById('aps');
+    const logEl = document.getElementById('log');
+
+    const coachBtn = document.getElementById('coachBtn');
+    const autoBtn = document.getElementById('autoBtn');
+    const multBtn = document.getElementById('multBtn');
+
+    const coachCostEl = document.getElementById('coachCost');
+    const autoCostEl = document.getElementById('autoCost');
+    const multCostEl = document.getElementById('multCost');
+
+    const state = {
+      score: 0,
+      clickPower: 1,
+      aps: 0,
+      coachLevel: 0,
+      autoLevel: 0,
+      multLevel: 0,
+      coachCost: 25,
+      autoCost: 50,
+      multCost: 100,
+    };
+
+    function addScore(amount) {
+      state.score += amount;
+      updateUI();
+    }
+
+    function updateUI() {
+      scoreEl.textContent = state.score.toLocaleString();
+      clickPowerEl.textContent = state.clickPower;
+      apsEl.textContent = state.aps;
+      coachCostEl.textContent = state.coachCost;
+      autoCostEl.textContent = state.autoCost;
+      multCostEl.textContent = state.multCost;
+
+      coachBtn.disabled = state.score < state.coachCost;
+      autoBtn.disabled = state.score < state.autoCost;
+      multBtn.disabled = state.score < state.multCost;
+    }
+
+    function pushLog(text) {
+      const line = document.createElement('div');
+      line.className = 'log-line';
+      line.textContent = text;
+      logEl.prepend(line);
+      while (logEl.children.length > 5) {
+        logEl.removeChild(logEl.lastChild);
+      }
+    }
+
+    document.getElementById('clickerButton').addEventListener('click', () => {
+      addScore(state.clickPower);
+      pushLog(`Goal scored! +${state.clickPower} goal${state.clickPower === 1 ? '' : 's'}`);
+    });
+
+    function buyCoach() {
+      if (state.score < state.coachCost) return;
+      state.score -= state.coachCost;
+      state.coachLevel += 1;
+      state.clickPower += 1;
+      state.coachCost = Math.round(state.coachCost * 1.35);
+      pushLog('Goal Coach upgraded — each click is stronger.');
+      updateUI();
+    }
+
+    function buyAuto() {
+      if (state.score < state.autoCost) return;
+      state.score -= state.autoCost;
+      state.autoLevel += 1;
+      state.aps += 1;
+      state.autoCost = Math.round(state.autoCost * 1.45);
+      pushLog('Training Ground upgraded — auto-goals are online.');
+      updateUI();
+    }
+
+    function buyMult() {
+      if (state.score < state.multCost) return;
+      state.score -= state.multCost;
+      state.multLevel += 1;
+      state.clickPower *= 2;
+      state.multCost = Math.round(state.multCost * 1.8);
+      pushLog('Momentum Boost activated — your clicks are doubled!');
+      updateUI();
+    }
+
+    coachBtn.addEventListener('click', buyCoach);
+    autoBtn.addEventListener('click', buyAuto);
+    multBtn.addEventListener('click', buyMult);
+
+    setInterval(() => {
+      if (state.aps > 0) {
+        addScore(state.aps);
+        pushLog(`Auto-goal run! +${state.aps} goals`);
+      }
+    }, 1000);
+
+    updateUI();
+  </script>
+</body>
+</html>
